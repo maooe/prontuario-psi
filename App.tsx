@@ -62,12 +62,6 @@ const ERICKSONIAN_PHRASES = [
   "A mudança não é apenas possível, ela é inevitável."
 ];
 
-const CONSTELLATION_PHRASES = [
-  "A ordem vem antes do amor.",
-  "O que é, pode ser.",
-  "Aceitação é a chave."
-];
-
 const POST_IT_COLORS = [
   'bg-yellow-200 text-yellow-900 border-yellow-300',
   'bg-blue-200 text-blue-900 border-blue-300',
@@ -305,25 +299,40 @@ const PostItSystem = () => {
   );
 };
 
+// Fix: Typed the messages state in AIModal to resolve TypeScript "property sources does not exist" errors
 const AIModal = ({ onClose, context }: any) => {
-  const [messages, setMessages] = useState([{ role: 'bot', text: 'Olá! Sou o Agente PSI. Como posso ajudar com seus prontuários hoje?' }]);
+  // Define message structure to include optional sources for search grounding
+  const [messages, setMessages] = useState<Array<{ 
+    role: string; 
+    text: string; 
+    sources?: Array<{ uri: string; title: string }> 
+  }>>([{ role: 'bot', text: 'Olá! Sou o Agente PSI. Como posso ajudar com seus prontuários hoje?' }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
   const send = async () => {
     if (!input.trim() || loading) return;
-    const txt = input; setInput(''); setMessages(m => [...m, { role: 'user', text: txt }]);
+    const txt = input; 
+    setInput(''); 
+    setMessages(m => [...m, { role: 'user', text: txt }]);
     setLoading(true);
-    const res = await askAgent(txt, context);
-    setMessages(m => [...m, { role: 'bot', text: res.text, sources: res.sources }]);
-    setLoading(false);
+    
+    try {
+      const res = await askAgent(txt, context);
+      setMessages(m => [...m, { role: 'bot', text: res.text, sources: res.sources || [] }]);
+    } catch (err) {
+      console.error("Erro no Componente AIModal:", err);
+      setMessages(m => [...m, { role: 'bot', text: "Houve um erro inesperado na comunicação com o assistente.", sources: [] }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
        <div className="bg-white dark:bg-slate-900 w-full max-w-4xl h-[80vh] rounded-[50px] shadow-2xl flex flex-col overflow-hidden animate-scale-up border dark:border-slate-800">
           <div className="p-8 bg-indigo-600 text-white flex justify-between items-center">
-            <div className="flex items-center space-x-3"><Bot size={28}/><div><h2 className="font-black uppercase text-sm">Agente PSI Inteligente</h2><span className="text-[9px] opacity-70 font-bold uppercase tracking-widest">Powered by Gemini 3</span></div></div>
+            <div className="flex items-center space-x-3"><Bot size={28}/><div><h2 className="font-black uppercase text-sm">Agente PSI Inteligente</h2><span className="text-[9px] opacity-70 font-bold uppercase tracking-widest">Versão Otimizada</span></div></div>
             <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><X size={24}/></button>
           </div>
           <div className="flex-1 overflow-y-auto p-8 bg-slate-50 dark:bg-slate-950 space-y-6 custom-scrollbar">
@@ -339,10 +348,17 @@ const AIModal = ({ onClose, context }: any) => {
                  </div>
                </div>
              ))}
-             {loading && <div className="flex space-x-2 animate-pulse p-4"><div className="w-2 h-2 bg-indigo-500 rounded-full"></div><div className="w-2 h-2 bg-indigo-500 rounded-full"></div><div className="w-2 h-2 bg-indigo-500 rounded-full"></div></div>}
+             {loading && (
+               <div className="flex items-center space-x-2 p-4 animate-pulse">
+                 <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                 <div className="w-2 h-2 bg-indigo-500 rounded-full delay-100"></div>
+                 <div className="w-2 h-2 bg-indigo-500 rounded-full delay-200"></div>
+                 <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-2">Pensando...</span>
+               </div>
+             )}
           </div>
           <div className="p-6 bg-white dark:bg-slate-900 border-t dark:border-slate-800 flex space-x-4">
-             <input className="flex-1 p-5 rounded-3xl bg-slate-100 dark:bg-slate-800 dark:text-white outline-none font-medium border-2 border-transparent focus:border-indigo-500/20" placeholder="Ex: Pesquise pacientes ou CIDs..." value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && send()} />
+             <input className="flex-1 p-5 rounded-3xl bg-slate-100 dark:bg-slate-800 dark:text-white outline-none font-medium border-2 border-transparent focus:border-indigo-500/20" placeholder="Pergunte qualquer coisa..." value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && send()} />
              <button onClick={send} className="p-5 bg-indigo-600 text-white rounded-3xl shadow-xl hover:scale-105 active:scale-95 transition-all"><Send size={24}/></button>
           </div>
        </div>
@@ -391,7 +407,7 @@ const SessionsTab = ({ patients, sessions, setSessions }: any) => {
     setNewS({ date: new Date().toISOString().split('T')[0], theme: '', obs: '' });
   };
   return (
-    <div className="max-w-6xl mx-auto space-y-10 animate-fade-in">
+    <div className="max-w-6xl auto space-y-10 animate-fade-in">
        <div className="flex justify-between items-center bg-white dark:bg-slate-800 p-8 rounded-[40px] shadow-sm">
           <h2 className="text-xl font-black uppercase">Atendimentos</h2>
           <select value={pid} onChange={e => setPid(e.target.value)} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl text-xs font-black uppercase text-indigo-600 border-none outline-none">
