@@ -1,69 +1,54 @@
 
 import { GoogleGenAI } from "@google/genai";
 
+// Fix: Updated model to gemini-3-flash-preview and enforced strict initialization and search grounding logic
 export const askAgent = async (prompt: string, contextData?: any) => {
-  // A chave de API deve ser configurada na Vercel como API_KEY
-  const apiKey = process.env.API_KEY;
-  
-  if (!apiKey || apiKey === "undefined") {
-    return { 
-      text: "⚠️ Chave de API não configurada. Vá em 'Settings > Environment Variables' na Vercel e adicione a variável API_KEY com sua chave do Google AI Studio.", 
-      sources: [] 
-    };
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
-  
-  // Resumo para a IA entender o que está acontecendo no consultório
-  const patientsCount = contextData?.patients?.length || 0;
-  const sessionsCount = contextData?.sessions?.length || 0;
-  
-  const patientsDetails = contextData?.patients?.slice(-10).map((p: any) => 
-    `- ${p.name} (Problema: ${p.problemBrief || 'Não detalhado'})`
-  ).join('\n');
-
-  const systemInstruction = `Você é o "Agente PSI", assistente de um psicólogo clínico.
-  Você tem acesso a ${patientsCount} pacientes e ${sessionsCount} registros de sessões.
-  
-  DADOS RECENTES:
-  ${patientsDetails}
-
-  REGRAS:
-  1. Use Tom Profissional e Ético (Sigilo total).
-  2. Para buscas de CIDs ou termos técnicos, use a ferramenta de busca Google Search.
-  3. Para buscas de pacientes, use os dados acima.
-  4. Responda em Português (PT-BR).
-  5. Se perguntarem sobre a agenda, confirme que as sessões do prontuário já estão unificadas com o Google Calendar no Dashboard.`;
+  // Always use naming parameter for apiKey and initialize strictly as per guidelines
+  console.log("Agente PSI: Iniciando chamada de IA...");
 
   try {
+    // Correct initialization following the @google/genai guidelines
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    // Prepare context summary from patient data
+    const pSummary = contextData?.patients?.map((p: any) => p.name).join(', ') || 'Nenhum';
+
+    const systemInstruction = `Você é o Agente PSI, um assistente virtual ético e profissional para psicólogos brasileiros. 
+    Responda de forma curta, técnica e acolhedora em Português (Brasil).
+    Pacientes no banco de dados atual: ${pSummary}.
+    Utilize a ferramenta de busca do Google para fundamentar respostas sobre legislações, técnicas de psicologia (como TCC, Psicanálise) e saúde mental.`;
+
+    // Use 'gemini-3-flash-preview' for basic text tasks and reasoning
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: [{ parts: [{ text: prompt }] }],
       config: {
         systemInstruction,
-        tools: [{ googleSearch: {} }]
+        temperature: 0.7,
+        tools: [{ googleSearch: {} }], // Enable search grounding for up-to-date information
+        thinkingConfig: { thinkingBudget: 0 } // Optimization for response latency
       }
     });
 
-    // Acesso correto à propriedade .text conforme diretrizes
-    const responseText = response.text || "Não consegui gerar uma resposta agora. Tente reformular a pergunta.";
+    // Directly access the text property (getter) as per SDK requirements
+    const text = response.text || "Desculpe, não consegui processar sua solicitação no momento.";
     
-    // Extração de fontes
-    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    const sources = groundingChunks
-      .filter((c: any) => c.web)
-      .map((c: any) => ({
-        title: c.web.title || "Fonte externa",
-        uri: c.web.uri || "#"
-      }));
+    // Fix: Extract grounding sources from groundingChunks if Google Search was triggered
+    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks
+      ?.filter((chunk: any) => chunk.web)
+      .map((chunk: any) => ({
+        uri: chunk.web.uri,
+        title: chunk.web.title || chunk.web.uri
+      })) || [];
 
-    return { text: responseText, sources };
+    console.log("Agente PSI: Resposta recebida com sucesso.");
+    return { text, sources };
+
   } catch (error: any) {
-    console.error("Erro Agente PSI:", error);
+    console.error("Agente PSI: Erro na chamada da API:", error);
     return { 
-      text: "Ocorreu um erro ao conectar com a inteligência artificial. Verifique se sua chave de API é válida e se há conexão com a internet.", 
+      text: "Desculpe, ocorreu um erro de conexão com os serviços de IA. Verifique sua conexão e tente novamente.", 
       sources: [] 
     };
   }
 };
-
