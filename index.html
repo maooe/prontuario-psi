@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prontuário PSI Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              rose: {
+                50: '#fff1f2',
+                100: '#ffe4e6',
+                200: '#fecdd3',
+                300: '#fda4af',
+                400: '#fb7185',
+                500: '#f43f5e',
+                600: '#e11d48',
+                gold: '#b76e79',
+              },
+            },
+          },
+        },
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; transition: all 0.3s ease; }
+        
+        /* Theme Overrides */
+        
+        /* Rose Gold Theme */
+        .theme-rose { background-color: #fff9f9; color: #5d3b3b; }
+        .theme-rose aside { background-color: #fff0f0; border-color: #fce4e4; }
+        .theme-rose .bg-white { background-color: #fffefe; }
+        .theme-rose .text-indigo-600 { color: #b76e79; }
+        .theme-rose .bg-indigo-600 { background-color: #b76e79; }
+        
+        /* Retro Theme (80s Vaporwave) */
+        .theme-retro { background-color: #2b0035; color: #00f2ff; }
+        .theme-retro aside { background-color: #1a0021; border-color: #ff00ff; }
+        .theme-retro header { background-color: #1a0021; border-color: #ff00ff; }
+        .theme-retro .bg-white { background-color: #3d004d; color: #fff; }
+        .theme-retro .text-slate-400 { color: #ff00ff; }
+        .theme-retro .text-slate-500 { color: #00f2ff; }
+        .theme-retro .bg-slate-50 { background-color: #1a0021; }
+        .theme-retro .text-indigo-600 { color: #ff00ff; }
+        .theme-retro .bg-indigo-600 { background-color: #ff00ff; }
+        
+        /* Pride Theme */
+        .theme-pride { background-color: #fdfcfc; }
+        .theme-pride aside { border-right: 8px solid; border-image: linear-gradient(to bottom, #FF0018, #FFA52C, #FFFF41, #008018, #0000F9, #86007D) 1; }
+        .theme-pride .bg-indigo-600 { background: linear-gradient(45deg, #FF0018, #86007D); }
+
+        /* Black & White Theme */
+        .theme-bw { background-color: #fff; color: #000; filter: grayscale(100%); }
+        .theme-bw * { border-radius: 0 !important; border-color: #000 !important; }
+        .theme-bw .bg-indigo-600 { background-color: #000; }
+        .theme-bw .text-indigo-600 { color: #000; text-decoration: underline; }
+        
+        /* Glass Degradê Theme */
+        .theme-glass { 
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+        }
+        .theme-glass .bg-white, .theme-glass aside, .theme-glass header {
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: white;
+        }
+        .theme-glass .text-slate-800, .theme-glass .text-slate-900, .theme-glass .text-slate-600 { color: white; }
+        .theme-glass .bg-slate-50 { background: rgba(0,0,0,0.1); }
+        .theme-glass input, .theme-glass select, .theme-glass textarea { 
+          background: rgba(255,255,255,0.1); 
+          color: white; 
+          border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+        
+        * {
+          transition-property: background-color, border-color, color, fill, stroke, transform, opacity;
+          transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+          transition-duration: 200ms;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

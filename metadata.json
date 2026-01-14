@@ -1,0 +1,7 @@
+{
+  "name": "Prontuário PSI Inteligente",
+  "description": "Sistema completo de gestão para psicólogos com anamnese detalhada, controle financeiro, registro de sessões e assistente IA integrado.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
